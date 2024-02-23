@@ -1,0 +1,26 @@
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    30   83.820 MiB   83.820 MiB           1   @profile
+    31                                         def compute_finite_difference(U, Uprev, mask, L, R, fac, aX, aY, xlin, tEnd, dt, plotRealTime):
+    32   83.820 MiB    0.000 MiB           1    t = 0
+    33   83.820 MiB    0.000 MiB           1    outputCount = 1
+    34   89.320 MiB    0.000 MiB         243    while t < tEnd:
+    35                                                  # calculate laplacian 
+    36   89.320 MiB    1.000 MiB         242            ULX = np.roll(U, L, axis=aX)
+    37   89.320 MiB    0.500 MiB         242            URX = np.roll(U, R, axis=aX)
+    38   89.320 MiB    0.500 MiB         242            ULY = np.roll(U, L, axis=aY)
+    39   89.320 MiB    0.500 MiB         242            URY = np.roll(U, R, axis=aY)
+    40                                         
+    41   89.320 MiB    1.875 MiB         242            laplacian = ( ULX + ULY - 4*U + URX + URY )
+    42                                         
+    43                                                  # update U
+    44   89.320 MiB    0.500 MiB         242            Unew = 2*U - Uprev + fac * laplacian
+    45   89.320 MiB    0.000 MiB         242            Uprev = 1.*U
+    46   89.320 MiB    0.500 MiB         242            U = 1.*Unew
+    47                                         
+    48                                                  # apply boundary conditions (Dirichlet/inflow)
+    49   89.320 MiB    0.000 MiB         242            U[mask] = 0
+    50   89.320 MiB    0.125 MiB         242            U[0,:] = np.sin(20*np.pi*t) * np.sin(np.pi*xlin)**2
+    51                                         
+    52                                                  # update time
+    53   89.320 MiB    0.000 MiB         242            t += dt

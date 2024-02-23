@@ -1,0 +1,89 @@
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    13                                           @profile                                                             
+    14                                           def main():                                                          
+    15                                               """ Finite Difference simulation """                             
+    16                                                                                                                
+    17                                               # Simulation parameters                                          
+    18         1          1.0      1.0      0.0      N              = 256   # resolution                              
+    19         1          0.3      0.3      0.0      boxsize        = 3.    # box size                                
+    20         1          0.2      0.2      0.0      c              = 1.    # wave speed                              
+    21         1          0.3      0.3      0.0      t              = 0     # time                                    
+    22         1          0.2      0.2      0.0      tEnd           = 2.    # stop time                               
+    23         1          0.3      0.3      0.0      plotRealTime   = False  # switch for plotting simulation in real…
+    24                                                                                                                
+    25                                               # Mesh                                                           
+    26         1          1.0      1.0      0.0      dx = boxsize / N                                                 
+    27         1         35.9     35.9      0.0      dt = (np.sqrt(2)/2) * dx / c                                     
+    28         1          0.3      0.3      0.0      aX = 0   # x-axis                                                
+    29         1          0.2      0.2      0.0      aY = 1   # y-axis                                                
+    30         1          0.2      0.2      0.0      R = -1   # right                                                 
+    31         1          0.2      0.2      0.0      L = 1    # left                                                  
+    32         1          3.9      3.9      0.0      fac = dt**2 * c**2 / dx**2                                       
+    33                                                                                                                
+    34         1         74.1     74.1      0.1      xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N)                    
+    35         1        484.9    484.9      0.3      Y, X = np.meshgrid( xlin, xlin )                                 
+    36                                                                                                                
+    37                                               # Generate Initial Conditions & mask                             
+    38         1         62.8     62.8      0.0      U = np.zeros((N,N))                                              
+    39         1         28.6     28.6      0.0      mask = np.zeros((N,N),dtype=bool)                                
+    40         1          4.7      4.7      0.0      mask[0,:]  = True                                                
+    41         1          0.9      0.9      0.0      mask[-1,:] = True                                                
+    42         1          2.0      2.0      0.0      mask[:,0]  = True                                                
+    43         1          1.2      1.2      0.0      mask[:,-1] = True                                                
+    44         1          4.6      4.6      0.0      mask[int(N/4):int(N*9/32),:N-1]     = True                       
+    45         1          3.4      3.4      0.0      mask[1:N-1,int(N*5/16):int(N*3/8)]  = False                      
+    46         1          3.4      3.4      0.0      mask[1:N-1,int(N*5/8):int(N*11/16)] = False                      
+    47         1        148.0    148.0      0.1      U[mask] = 0                                                      
+    48         1        237.0    237.0      0.2      Uprev = 1.*U                                                     
+    49                                                                                                                
+    50                                               # prep figure                                                    
+    51                                               # fig = plt.figure(figsize=(6,6), dpi=80)                        
+    52                                               # cmap = plt.cm.bwr                                              
+    53                                               # cmap.set_bad('gray')                                           
+    54                                               # outputCount = 1                                                
+    55                                                                                                                
+    56                                               # Simulation Main Loop                                           
+    57       243        136.6      0.6      0.1      while t < tEnd:                                                  
+    58                                                                                                                
+    59                                                   # calculate laplacian                                        
+    60       242      11907.8     49.2      8.1          ULX = np.roll(U, L, axis=aX)                                 
+    61       242      10078.3     41.6      6.9          URX = np.roll(U, R, axis=aX)                                 
+    62       242      10883.7     45.0      7.4          ULY = np.roll(U, L, axis=aY)                                 
+    63       242      10544.3     43.6      7.2          URY = np.roll(U, R, axis=aY)                                 
+    64                                                                                                                
+    65       242      47557.1    196.5     32.5          laplacian = ( ULX + ULY - 4*U + URX + URY )                  
+    66                                                                                                                
+    67                                                   # update U                                                   
+    68       242      30303.4    125.2     20.7          Unew = 2*U - Uprev + fac * laplacian                         
+    69       242       7717.9     31.9      5.3          Uprev = 1.*U                                                 
+    70       242       7661.7     31.7      5.2          U = 1.*Unew                                                  
+    71                                                                                                                
+    72                                                   # apply boundary conditions (Dirichlet/inflow)               
+    73       242       5381.5     22.2      3.7          U[mask] = 0                                                  
+    74       242       2937.3     12.1      2.0          U[0,:] = np.sin(20*np.pi*t) * np.sin(np.pi*xlin)**2          
+    75                                                                                                                
+    76                                                   # update time                                                
+    77       242        128.6      0.5      0.1          t += dt                                                      
+    78                                                                                                                
+    79                                                   # plot in real time                                          
+    80                                                   # if (plotRealTime) or (t >= tEnd):                          
+    81                                                   #   plt.cla()                                                
+    82                                                   #   Uplot = 1.*U                                             
+    83                                                   #   Uplot[mask] = np.nan                                     
+    84                                                   #   plt.imshow(Uplot.T, cmap=cmap)                           
+    85                                                   #   plt.clim(-3, 3)                                          
+    86                                                   #   ax = plt.gca()                                           
+    87                                                   #   ax.invert_yaxis()                                        
+    88                                                   #   ax.get_xaxis().set_visible(False)                        
+    89                                                   #   ax.get_yaxis().set_visible(False)                        
+    90                                                   #   ax.set_aspect('equal')                                   
+    91                                                   #   plt.pause(0.001)                                         
+    92                                                   #   outputCount += 1                                         
+    93                                                                                                                
+    94                                                                                                                
+    95                                               # Save figure                                                    
+    96                                               # plt.savefig('finitedifference.png',dpi=240)                    
+    97                                               # plt.show()                                                     
+    98                                                                                                                
+    99         1          0.2      0.2      0.0      return 0          
