@@ -10,17 +10,17 @@ with the finite difference method
 
 """
 
-
+@profile
 def main():
 	""" Finite Difference simulation """
 	
 	# Simulation parameters
 	N              = 256   # resolution
-	boxsize        = 1.    # box size
+	boxsize        = 3.    # box size
 	c              = 1.    # wave speed
 	t              = 0     # time
 	tEnd           = 2.    # stop time
-	plotRealTime   = True  # switch for plotting simulation in real time
+	plotRealTime   = False  # switch for plotting simulation in real time
 	
 	# Mesh
 	dx = boxsize / N
@@ -48,10 +48,10 @@ def main():
 	Uprev = 1.*U
 
 	# prep figure
-	fig = plt.figure(figsize=(6,6), dpi=80)
-	cmap = plt.cm.bwr
-	cmap.set_bad('gray')
-	outputCount = 1
+	# fig = plt.figure(figsize=(6,6), dpi=80)
+	# cmap = plt.cm.bwr
+	# cmap.set_bad('gray')
+	# outputCount = 1
 	
 	# Simulation Main Loop
 	while t < tEnd:
@@ -76,27 +76,25 @@ def main():
 		# update time
 		t += dt
 		
-		print(t)
-		
 		# plot in real time
-		if (plotRealTime) or (t >= tEnd):
-			plt.cla()
-			Uplot = 1.*U
-			Uplot[mask] = np.nan
-			plt.imshow(Uplot.T, cmap=cmap)
-			plt.clim(-3, 3)
-			ax = plt.gca()
-			ax.invert_yaxis()
-			ax.get_xaxis().set_visible(False)
-			ax.get_yaxis().set_visible(False)	
-			ax.set_aspect('equal')	
-			plt.pause(0.001)
-			outputCount += 1
+		# if (plotRealTime) or (t >= tEnd):
+		# 	plt.cla()
+		# 	Uplot = 1.*U
+		# 	Uplot[mask] = np.nan
+		# 	plt.imshow(Uplot.T, cmap=cmap)
+		# 	plt.clim(-3, 3)
+		# 	ax = plt.gca()
+		# 	ax.invert_yaxis()
+		# 	ax.get_xaxis().set_visible(False)
+		# 	ax.get_yaxis().set_visible(False)	
+		# 	ax.set_aspect('equal')	
+		# 	plt.pause(0.001)
+		# 	outputCount += 1
 			
 	
 	# Save figure
-	plt.savefig('finitedifference.png',dpi=240)
-	plt.show()
+	# plt.savefig('finitedifference.png',dpi=240)
+	# plt.show()
 	    
 	return 0
 
