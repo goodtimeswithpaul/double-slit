@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
+from datetime import datetime	
+import os
 
 """
 Create Your Own Finite Difference Wave Equation Simulation (With Python)
@@ -27,12 +30,53 @@ def get_initial_U(N, mask):
 	U[mask] = 0
 	return U
 
-@profile
-def compute_finite_difference(U, Uprev, mask, L, R, fac, aX, aY, xlin, tEnd, dt, plotRealTime):
+def plot_U(U, mask, cmap):
+		plt.cla()
+		Uplot = 1.*U
+		Uplot[mask] = np.nan
+		plt.imshow(Uplot.T, cmap=cmap)
+		plt.clim(-3, 3)
+		ax = plt.gca()
+		ax.invert_yaxis()
+		ax.get_xaxis().set_visible(False)
+		ax.get_yaxis().set_visible(False)	
+		ax.set_aspect('equal')	
+		plt.pause(0.001)
+
+def save_output_figure():
+	current_directory = os.getcwd()
+	relative_path = 'output/'
+	output_directory = os.path.join(current_directory, relative_path)
+	os.makedirs(output_directory, exist_ok=True)
+
+	now = datetime.now()
+	current_time = now.strftime("%H%M%S")
+	filename = 'finitedifference' + current_time +'.png'
+
+	save_path = os.path.join(output_directory, filename)
+	plt.close('all')
+	matplotlib.use('Agg') 
+	plt.savefig(save_path, dpi=240)
+
+def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime):
 	t = 0
-	outputCount = 1
+
+	# === Initialize Mesh ===
+	dx = boxsize / N
+	dt = (np.sqrt(2)/2) * dx / c
+	fac = dt**2 * c**2 / dx**2
+	aX = 0   # x-axis
+	aY = 1   # y-axis
+	R = -1   # right
+	L = 1    # left
+
+	# === Initialize grid ===
+	xlin = np.linspace(0.5 * dx, boxsize - 0.5*dx, N)
+
+	# === Main simulation loop ===
 	while t < tEnd:
-		# calculate laplacian 
+		print(t)
+		# === Compute Laplacian ===
 		ULX = np.roll(U, L, axis=aX)
 		URX = np.roll(U, R, axis=aX)
 		ULY = np.roll(U, L, axis=aY)
@@ -40,71 +84,47 @@ def compute_finite_difference(U, Uprev, mask, L, R, fac, aX, aY, xlin, tEnd, dt,
 		
 		laplacian = ( ULX + ULY - 4*U + URX + URY )
 		
-		# update U
+		# === Update U ===
 		Unew = 2*U - Uprev + fac * laplacian
 		Uprev = 1.*U
 		U = 1.*Unew
 		
-		# apply boundary conditions (Dirichlet/inflow)
+		# === Apply boudary conditions (Dirichlet/inflow) ===
 		U[mask] = 0
 		U[0,:] = np.sin(20*np.pi*t) * np.sin(np.pi*xlin)**2
 		
-		# update time
+		# === Update time ===
 		t += dt
 		
-		# plot in real time
-		# if (plotRealTime) or t >= tEnd:
-		# 	plt.cla()
-		# 	Uplot = 1.*U
-		# 	Uplot[mask] = np.nan
-		# 	plt.imshow(Uplot.T, cmap=cmap)
-		# 	plt.clim(-3, 3)
-		# 	ax = plt.gca()
-		# 	ax.invert_yaxis()
-		# 	ax.get_xaxis().set_visible(False)
-		# 	ax.get_yaxis().set_visible(False)	
-		# 	ax.set_aspect('equal')	
-		# 	plt.pause(0.001)
-		# 	outputCount += 1
+		if (plotRealTime) or t >= tEnd:
+			plot_U(U, mask, cmap)
+
 
 def main():
 	""" Finite Difference simulation """
 	
-	# Simulation parameters
-	N              = 256   # resolution
-	boxsize        = 3.    # box size
-	c              = 1.    # wave speed
-	t              = 0     # time
-	tEnd           = 2.    # stop time
-	plotRealTime   = False  # switch for plotting simulation in real time
+	# === Simulation parameters ===
+	N              = 256   # Resolution
+	boxsize        = 1.    # Size of the box
+	c              = 1.    # Wave Speed
+	tEnd           = 2.    # Simulation time
+	plotRealTime   = True  # Set to True for real-time vizualisation
 	
-	# Mesh
-	dx = boxsize / N
-	dt = (np.sqrt(2)/2) * dx / c
-	aX = 0   # x-axis
-	aY = 1   # y-axis
-	R = -1   # right
-	L = 1    # left
-	fac = dt**2 * c**2 / dx**2
-
-	xlin = np.linspace(0.5*dx, boxsize-0.5*dx, N)
-	Y, X = np.meshgrid( xlin, xlin )
-	
-	# Generate Initial Conditions & mask
+	# === Generate mask & initial conditions
 	mask = get_mask(N)
 	U = get_initial_U(N, mask)
 	Uprev = 1.*U
 
-	# prep figure
-	# fig = plt.figure(figsize=(6,6), dpi=80)
-	# cmap = plt.cm.bwr
-	# cmap.set_bad('gray')
+	# === Prepare output figure ===
+	fig = plt.figure(figsize=(6,6), dpi=80)
+	cmap = plt.cm.bwr
+	cmap.set_bad('gray')
 
-	compute_finite_difference(U, Uprev, mask, L, R, fac, aX, aY, xlin, tEnd, dt, plotRealTime)
+	# === Run main function ===
+	simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime)
 				
-	# Save figure
-	# plt.savefig('finitedifference.png',dpi=240)
-	# plt.show()
+	# === Save output figure ===
+	save_output_figure()
 	    
 	return 0
 
