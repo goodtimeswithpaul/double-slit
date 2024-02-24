@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 from datetime import datetime	
+from numexpr import evaluate
 import os
 
 """
@@ -75,17 +76,18 @@ def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRe
 
 	# === Main simulation loop ===
 	while t < tEnd:
-		print(t)
+		#print(t)
 		# === Compute Laplacian ===
 		ULX = np.roll(U, L, axis=aX)
 		URX = np.roll(U, R, axis=aX)
 		ULY = np.roll(U, L, axis=aY)
 		URY = np.roll(U, R, axis=aY)
 		
-		laplacian = ( ULX + ULY - 4*U + URX + URY )
+		#laplacian = ( ULX + ULY - 4*U + URX + URY )
+		laplacian = evaluate("ULX + ULY - 4*U + URX + URY")
 		
 		# === Update U ===
-		Unew = 2*U - Uprev + fac * laplacian
+		Unew = evaluate("2*U - Uprev + fac * laplacian")
 		Uprev = 1.*U
 		U = 1.*Unew
 		
