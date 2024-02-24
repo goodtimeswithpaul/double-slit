@@ -1,5 +1,11 @@
 import numpy as np
-def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime):
+cimport numpy as np
+import matplotlib.pyplot as plt
+def simulate_finite_difference(double[:]U, double[:]Uprev, double[:]mask, double boxsize, int N, double c, cmap, double tEnd, bint plotRealTime):
+	cdef int t, aX, aY, R, L
+	cdef double dx, dt, fac
+	cdef np.ndarray[np.double_t, ndim=1] xlin
+	cdef double[:] laplacian, Unew, ULX, URX, ULY, URY
 	t = 0
 
 	# === Initialize Mesh ===
@@ -36,3 +42,18 @@ def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRe
 		
 		# === Update time ===
 		t += dt
+		if (plotRealTime) or t >= tEnd:
+			plot_U(U, mask, cmap)
+
+def plot_U(U, mask, cmap):
+		plt.cla()
+		Uplot = 1.*U
+		Uplot[mask] = np.nan
+		plt.imshow(Uplot.T, cmap=cmap)
+		plt.clim(-3, 3)
+		ax = plt.gca()
+		ax.invert_yaxis()
+		ax.get_xaxis().set_visible(False)
+		ax.get_yaxis().set_visible(False)	
+		ax.set_aspect('equal')	
+		plt.pause(0.001)
