@@ -3,7 +3,9 @@ cimport numpy as np
 cimport cython
 import matplotlib.pyplot as plt
 
-def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime):
+def simulate_finite_difference(U, Uprev, mask, double boxsize, int N, double c, cmap, double tEnd, plotRealTime):
+    cdef double t, dx, dt, fac
+    cdef int aX, aY, R, L
     t = 0
     # === Initialize Mesh ===
     dx = boxsize / N
