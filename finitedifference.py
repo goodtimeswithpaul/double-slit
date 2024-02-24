@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-from datetime import datetime	
+import cupy as cp
+from cupy import (roll)
+from datetime import datetime
 import os
 
 """
@@ -22,12 +24,13 @@ def get_mask(N):
 	mask[int(N/4):int(N*9/32),:N-1] = True
 	mask[1:N-1,int(N*5/16):int(N*3/8)] = False
 	mask[1:N-1,int(N*5/8):int(N*11/16)] = False
-
+	cp.cuda.Stream.null.synchronize()
 	return mask
 
 def get_initial_U(N, mask):
-	U = np.zeros((N,N))
+	U = cp.zeros((N,N))
 	U[mask] = 0
+	cp.cuda.Stream.null.synchronize()
 	return U
 
 def plot_U(U, mask, cmap):
@@ -71,28 +74,35 @@ def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRe
 	L = 1    # left
 
 	# === Initialize grid ===
-	xlin = np.linspace(0.5 * dx, boxsize - 0.5*dx, N)
+	xlin = cp.linspace(0.5 * dx, boxsize - 0.5*dx, N)
 
 	# === Main simulation loop ===
 	while t < tEnd:
 		print(t)
 		# === Compute Laplacian ===
-		ULX = np.roll(U, L, axis=aX)
-		URX = np.roll(U, R, axis=aX)
-		ULY = np.roll(U, L, axis=aY)
-		URY = np.roll(U, R, axis=aY)
-		
+		ULX = cp.roll(U, L, axis=aX)
+		URX = cp.roll(U, R, axis=aX)
+		ULY = cp.roll(U, L, axis=aY)
+		URY = cp.roll(U, R, axis=aY)
+		cp.cuda.Stream.null.synchronize()
+
 		laplacian = ( ULX + ULY - 4*U + URX + URY )
-		
+		cp.cuda.Stream.null.synchronize()
+
+
 		# === Update U ===
 		Unew = 2*U - Uprev + fac * laplacian
+		cp.cuda.Stream.null.synchronize()
 		Uprev = 1.*U
+		cp.cuda.Stream.null.synchronize()
 		U = 1.*Unew
-		
+		cp.cuda.Stream.null.synchronize()
+
 		# === Apply boudary conditions (Dirichlet/inflow) ===
 		U[mask] = 0
-		U[0,:] = np.sin(20*np.pi*t) * np.sin(np.pi*xlin)**2
-		
+		U[0,:] = cp.sin(20*np.pi*t) * cp.sin(np.pi*xlin)**2
+		cp.cuda.Stream.null.synchronize()
+
 		# === Update time ===
 		t += dt
 		
