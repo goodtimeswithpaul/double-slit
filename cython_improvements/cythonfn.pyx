@@ -19,7 +19,6 @@ def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRe
 
     # === Main simulation loop ===
     while t < tEnd:
-        print(t)
         # === Compute Laplacian ===
         ULX = np.roll(U, L, axis=aX)
         URX = np.roll(U, R, axis=aX)
