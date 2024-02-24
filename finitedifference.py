@@ -54,8 +54,6 @@ def save_output_figure():
 	filename = 'finitedifference' + current_time +'.png'
 
 	save_path = os.path.join(output_directory, filename)
-	plt.close('all')
-	matplotlib.use('Agg') 
 	plt.savefig(save_path, dpi=240)
 
 def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime):
@@ -108,7 +106,7 @@ def main():
 	boxsize        = 1.    # Size of the box
 	c              = 1.    # Wave Speed
 	tEnd           = 2.    # Simulation time
-	plotRealTime   = True  # Set to True for real-time vizualisation
+	plotRealTime   = False  # Set to True for real-time vizualisation
 	
 	# === Generate mask & initial conditions
 	mask = get_mask(N)
