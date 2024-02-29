@@ -82,10 +82,11 @@ def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRe
 		ULY = np.roll(U, L, axis=aY)
 		URY = np.roll(U, R, axis=aY)
 		
-		laplacian = (ULX + ULY - 4*U + URX + URY)
+		#laplacian = ( ULX + ULY - 4*U + URX + URY )
+		laplacian = evaluate("ULX + ULY - 4*U + URX + URY")
 		
 		# === Update U ===
-		Unew = 2*U - Uprev + fac * laplacian
+		Unew = evaluate("2*U - Uprev + fac * laplacian")
 		Uprev = 1.*U
 		U = 1.*Unew
 		
@@ -124,7 +125,7 @@ def main():
 	simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime)
 				
 	# === Save output figure ===
-	#save_output_figure()
+	# save_output_figure()
 	    
 	return 0
 
