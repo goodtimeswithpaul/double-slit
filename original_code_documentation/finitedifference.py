@@ -57,6 +57,9 @@ def save_output_figure():
 	plt.savefig(save_path, dpi=240)
 
 def simulate_finite_difference(U, Uprev, mask, boxsize, N, c, cmap, tEnd, plotRealTime):
+	"""
+	The main function of focus. Uses the finite differerence method to update the displacement of each coordinate in U.
+	"""
 	t = 0
 
 	# === Initialize Mesh ===
